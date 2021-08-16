@@ -32,7 +32,7 @@ words_per_minute         : 200
 comments:
   provider               : "disqus" # false (default), "disqus", "discourse", "facebook", "staticman", "staticman_v2", "utterances", "giscus", "custom"
   disqus:
-    shortname            : "Bong" # https://help.disqus.com/customer/portal/articles/466208-what-s-a-shortname-
+    shortname            : "github-bong-github-io" # https://help.disqus.com/customer/portal/articles/466208-what-s-a-shortname-
   discourse:
     server               : # https://meta.discourse.org/t/embedding-discourse-comments-via-javascript/31963 , e.g.: meta.discourse.org
   facebook:
@@ -103,7 +103,7 @@ analytics:
 author:
   name             : "Jinho Yoo"
   avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "2015 ~ Sogang Univ"
+  bio              : "여기는 소개글 쓰는 곳"
   location         : "Seoul,Korea"
   email            : "0904lennon@gmail.com"
   links:
@@ -217,7 +217,7 @@ sass:
 permalink: /:categories/:title/
 paginate: 5 # amount of posts to show
 paginate_path: /page:num/
-timezone: # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone: Asia/Seoul # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
 
 # Plugins (previously gems:)
@@ -294,4 +294,8 @@ defaults:
     values:
       layout: single
       author_profile: true
+      read_time: false
+      comments: true
+      share: true
+      related: false
     
