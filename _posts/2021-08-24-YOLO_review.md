@@ -3,9 +3,9 @@ title:  "2021-08-24 YOLO 논문 리뷰"
 excerpt: "어제부터 시작한 YOLO 논문 리뷰를 마쳤다."
 
 categories:
-  - Blog
+  - TIL, Blog
 tags:
-  - Blog
+  - YOLO, Review
 ---
 
 # You Only Look Once: Unified, Real-Time Object Detection               
@@ -44,49 +44,38 @@ R-CNN use __region proposal__
 - refine b.b           
 - __Slow (2-staged)  & must be trained seperately__           
 
-​             
-
 YOLO 는 한 번에 __b.b 좌표__ 와 __class probabilities__  예측            
 
 > A single convolutional network __simultaneously__ predicts __multiple bounding boxes and class probabilities for those boxes__           
 
-​             
-
 [real time 에서 실행한 영상](http://pjreddie.com/yolo/)            
-
-​                          
 
 > YOLO reasons globally about the image                  
 
 See __entire image__   (Unlike sliding window and region proposal)            
 
 - __그래서 Fast R-CNN 은 background match error 가 많은데 (can't see larger context), YOLO는 전체 이미지를 한 번에 보니 background error가 적을 수 밖에__          
-
-​                 
+         
 
 > YOLO learns generalizable representations of objects            
 
 새로운 domain 에 가져가도 다른 모델들 보다 성능 저하가 적다                   
-
-​              
+       
 
 YOLO는 빠르지만 __작은 objects를 잘 찾지 못한다__            
 
 - grid cell 마다 하나의 class 를 예측해서 한 cell 에 작은 두 objects가 있으면 잘 감지하지 못 할듯                  
 
 ​                   
-
 <br/>
 
 ## 2. Unified Detection              
 
 > predicts all bounding boxes across all classes for an image simultaneously             
-
-​                   
+ 
 
 각 b.b을 예측할 때 전체 의미에서 나온 features를 사용한다                            
 
-​                      
 
 Image를 __S x S grid로 나눈다__             
 
@@ -97,17 +86,15 @@ Image를 __S x S grid로 나눈다__
 - 각 bounding box 는 5 predictions : x, y, w, h, confidence                  
   - (x, y)는 박스의 중앙 의미 w, h는 박스의 가로, 세로              
 
-각 grid cell 마다 __C   conditional class probabilities, Pr(Class_i|Objects)__ 도  예측한다             
+각 grid cell 마다 C   conditional class probabilities, Pr(Class_i|Objects) 도  예측한다             
 
 - 각 cell 마다 1 class만 예측
-
-​                     
+             
 
 Test time 때에는 __C__ 와 __박스마다 confidence__  곱해서 __Pr(Class_i) * IOU__                 
 
 - __Pr(Class_i) * IOU__ : __박스에 예측한 class가 있을 확률과 object에 box가 얼마나 잘 fit한지__                   
 
-​                      
 
 final prediction : __S x S ( B * 5 + C)__ tensor             
 
@@ -116,14 +103,12 @@ final prediction : __S x S ( B * 5 + C)__ tensor
 - 논문에서는 S = 7, B = 2, C = 20 사용  7 x 7 x (30) tensor                  
 
 ​             
-
 <br/>
 
 ### 2.1 Network Design             
 
 Pascal VOC detection dataset에 evaluate         
 
-​         
 
 GoogLeNet for classification 의 구조 가지고 왔다          
 
@@ -134,22 +119,18 @@ GoogLeNet for classification 의 구조 가지고 왔다
 - Detection 할 때는 448 x 448 input size  이유는 뒤에           
 
 ​             
-
 <br/>
 
 ## 2.2 Training             
 
 ImageNet 1000-class dataset에 앞에 __20 conv layers를 pretrain__ 했다            
 
-​          
 
 Classification 보다 detection 은 fine-grained visual info 를 필요로 해서 224 x 224 로 __448 x 448__ 사이즈로 증가시켰다            
 
-​                  
 
 Pretrained  된 20 conv layers 뒤에 random initialized 된 __4 conv layers 와 2 fc layers__  추가 했다              
 
-​               
 
 Final layer predicts both __class probabilities__ and __b.b coordinates__          
 
@@ -157,12 +138,9 @@ Final layer predicts both __class probabilities__ and __b.b coordinates__
 - b.b 의 x,y  좌표도 각 grid cell에서의 offset으로 parametrize (마찬가지로 0 ~ 1 사이 값으로 표현)             
 
 
-
 final layer 는 linear activation function 사용          
-
 나머지 layers 는 leaky ReLu 사용           
 
-​             
 
 Sum-squared error 사용 (easy to optimize)          
 
@@ -172,22 +150,18 @@ Localization error 와 classification error 동일하게 하는데 이는 not id
 
 __Increase__ loss from b.b coordinates predictions and __decrease__ loss from confidence predictions             
 
-​             
 
 __큰 박스의 작은 크기 변화는 작은 박스의 작은 크기 변화 보다 가중치를 적게 하기 위해__ 가로 세로의 제곱근을 예측         
 
-​                   
 
 Train 중 Each b.b predictor 마다 실제 박스와 가장 높은 IOU를 가지는 하나의 object를 예측하게끔         
 
-​         
 
 Loss function:       
 
 - 해당 cell에 object가 있어야만 penalizes classification error       
 - 가장 IOU가 높은 predictor만 penalizes b.b coordinates error            
-
-​             
+        
 
 Epochs : 135       
 
@@ -198,15 +172,13 @@ Momentum : 0.9
 Decay : 0.0005          
 
 Learning rate : 10 ^-3  -> 10^-2 -> 10^-3 -> 10^-4           
-
-​              
+      
 
 Overfitting 피하기 위해           
 
 - 첫 fc layer 뒤에 Dropout 0.5       
 - Data augmentation          
 
-​          
 
 <br/>
 
@@ -216,7 +188,6 @@ Multiple grid cells 에 퍼져있는 objects는 중복 감지 됨
 
 -> 이를 해결하기 위해 __Non-maximal suppression__                   
 
-​                  
 
 <br/>
 
@@ -228,7 +199,6 @@ Strong spatial constraints
 - 훈련된 data에 없는 새로운 비율이나 구성의 object에 약함        
 - __작은 bb에서의 에러와 큰 bb에서의 에러를 동등하게 여긴다__           
 
-​               
 
 <br/>
 
@@ -240,13 +210,11 @@ Start by extracting features from input images
 
 Classifiers or localizers, identify objects in feature space (by sliding window or regions in image)         
 
-​              
 
 __Deformable parts models.__            
 
 Sliding window 방식 + Disjoint pipeline        
 
-​             
 
 __R-CNN__        
 
@@ -255,8 +223,7 @@ Region proposals
 Selective search로 b.b 만들고, cnn 거쳐서 SVM으로 box score, 등등 복잡해서 한 image당 40s             
 
 __YOLO도 각 grid cell마다 b.b 만들고 confidence score 만들지만 grid 방식으로 중복 감지가 더 적고 b.b 갯수가 더 적다 ( 2000 vs 98 )__              
-
-​               
+   
 
 __Other Fast Detectors__         
 
@@ -264,7 +231,6 @@ Fast and Faster R-CNN : neural network로 region 생성했지만 real time으로
 
 DPM 방식도 느림            
 
-​          
 
 __Deep MultiBox__         
 
@@ -272,20 +238,17 @@ Single object detection은 수행 가능  그러나 general 한 건 불가
 
 Not a complete -> Need further image path classification          
 
-​            
 
 __OverFeat__             
 
 Disjoint Pipeline + Local info만 사용해 예측해 global context 불가     
 
-​           
-
+​
 __MultiGrasp__            
 
 Grasp detection 의 아이디어와 비슷하나 YOLO 가 훨씬 복잡한 task 수행     
 
 Grasp 은 오직 grasping에 적합한 region만 찾음             
-
 ​                
 
 <br/>
@@ -306,7 +269,6 @@ Fastest DPM, R-CNN minus R, Fast R-CNN 다 real-time에 무리
 
 최근 Faster R-CNN은 selective search를 neural network로 바꿨지만 느리거나 꽤 빠르더라도 부정확했음            
 
-​            
 
 <br/>
 
@@ -316,21 +278,17 @@ YOLO와 Fast R-CNN을 비교
 
 Dataset : VOC 2007         
 
-​          
 
 5 Types or error:             
-
 - Correct         
 - Localization       
 - Similar          
 - Other            
 - Background           
-
-​          
+   
 
 __YOLO는 object 위치 잘 찾지 못함 그러나 Background false positive (없는데 object가 있다고 하는) error는 적음__             
 
-​          
 
 <br/>
 
@@ -340,7 +298,6 @@ Fast R-CNN에 YOLO 결합했더니 성능 좋아짐
 
 (R-CNN에서 예측한 b.b 를 YOLO에서도 비슷한 b.b로 예측하게 되면 boost 줌)            
 
-​          
 
 <br/>
 
@@ -349,8 +306,7 @@ Fast R-CNN에 YOLO 결합했더니 성능 좋아짐
 YOLO 모델은 VOC 2012에서 성능이 57.9% mAP         
 
 Fast R-CNN + YOLO 은 5등           
-
-​             
+  
 
 <br/>
 
@@ -362,13 +318,11 @@ R-CNN 은 VOC 2007에서는 좋은 성능을 보였으나 artwork에서는 성�
 
 DPM은 둘다 성능이 비슷비슷했음  (애초에 VOC에서 성능이 그렇게 좋지 못했음)           
 
-​               
 
 YOLO는 성능이 둘다 좋았음          
 
 - Artwork 과 natural image는 pixel level 에서는 매우 다르지만 object level에서는 모양과 크기가 비슷하기 때문에 두 dataset 모두에서 좋은 성능을 보일 수 있음            
 
-​           
 
 <br/>
 
@@ -377,8 +331,7 @@ YOLO는 성능이 둘다 좋았음
 웹켐으로부터 들어오는 이미지들을 YOLO로 processing해 tracking system 처럼 실행해봤다         
 
 [관련 코드와 영상](http://pjreddie.com/yolo)          
-
-​           
+     
 
 ## 6. Conclusion          
 
