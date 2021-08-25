@@ -3,9 +3,9 @@ title:  "2021-08-24 YOLO 논문 리뷰"
 excerpt: "어제부터 시작한 YOLO 논문 리뷰를 마쳤다."
 
 categories:
-  - TIL, Blog
+  - TIL
 tags:
-  - YOLO, Review
+  - YOLO
 ---
 
 # You Only Look Once: Unified, Real-Time Object Detection               
